@@ -17,13 +17,14 @@ jobs:
   boss:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
 
       - name: Install deps
         run: pip install google-genai Pillow trimesh pygltflib
@@ -71,7 +72,7 @@ jobs:
           latest=$(find outputs -name "RESUME_COURT.md" -mmin -130 | head -1)
           if [ -n "$latest" ]; then
             echo "Envoi $latest"
-            python boss_mailer.py --subject "[KXDS-BOSS] Avancement $(basename $(dirname $latest))" --body-file "$latest" --attach "$latest"
+            python boss_mailer.py --subject "[KXDS-BOSS] Avancement $(basename $(dirname $latest))" --body-file "$latest" --attach "$latest" --body "voir piece jointe"
           else
             echo "Pas de nouveau resume"
           fi

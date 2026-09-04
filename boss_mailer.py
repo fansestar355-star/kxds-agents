@@ -69,7 +69,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Boss mailer KXDS")
     ap.add_argument("--to", default=DEFAULT_TO)
     ap.add_argument("--subject", required=True)
-    ap.add_argument("--body", required=True)
+    ap.add_argument("--body", required=False, default="")
     ap.add_argument("--body-file", help="Fichier contenant le body")
     ap.add_argument("--attach", nargs="*", default=[])
     ap.add_argument("--test", action="store_true", help="Envoi test")
@@ -77,6 +77,8 @@ if __name__ == "__main__":
     body = args.body
     if args.body_file:
         body = Path(args.body_file).read_text(encoding="utf-8")
+    if not body:
+        ap.error("--body ou --body-file requis")
     if args.test:
         body = "Test BOSS KXDS - Si tu reçois ceci, le mail pro fonctionne.\n\n" + body
     ok = send_mail(args.to, args.subject, body, args.attach)
