@@ -77,17 +77,15 @@ def poll_and_reply(dry=False):
         m.select("INBOX")
         # Cherche uniquement les retours pour Boss (evite les 4000 spams Instagram)
         # On cherche UNSEEN qui contiennent KXDS-BOSS ou qui sont une reponse (In-Reply-To)
+        # Cherche uniquement les REPONSES a Kélé (evite Canva etc.)
         typ, data = m.search(None, '(UNSEEN SUBJECT "KXDS-BOSS")')
         uids_boss = data[0].split() if data[0] else []
-        # + les UNSEEN recents (max 10) pour capter un nouveau mail "Boss: ..." sans tag
-        typ2, data2 = m.search(None, '(UNSEEN SINCE "04-Sep-2026")')
-        uids_recent = data2[0].split()[-10:] if data2[0] else []
-        uids = list(set(uids_boss + uids_recent))
+        uids = uids_boss
         if not uids:
-            print("Aucun nouveau mail pour Boss")
+            print("Aucune reponse a Kélé (UNSEEN KXDS-BOSS)")
             m.logout()
             return
-        print(f"Candidats Boss: {uids_boss} + recents: {uids_recent} -> total {uids}")
+        print(f"Reponses Kélé à traiter: {uids}")
         print(f"{len(uids)} nouveau(x) mail(s) : {uids}")
         processed = get_processed()
         from google import genai
@@ -196,12 +194,22 @@ Reponds en 6-8 phrases max, ton Boss."""
                     reply = f"Merci pour ton retour : {body[:200]} - Je transmets aux agents. (Erreur Gemini: {e})"
             else:
                 reply = f"Merci pour ton retour, je transmets aux agents. (GEMINI_KEY manquant)"
-            # Envoi reponse
+            # Envoi reponse (mail + WhatsApp/Call)
             reply_subj = f"Re: {subj}" if not subj.startswith("Re:") else subj
             if not reply_subj.startswith("[KXDS-BOSS]"):
                 reply_subj = f"[KXDS-BOSS] {reply_subj}"
             full_body = f"{reply}\n\n---\nTon message d'origine:\n{body[:1000]}\n\n---\nBoss KXDS - reponds a ce mail pour continuer la discussion. Dossier: {BASE}/outputs"
             ok = boss_mailer.send_mail(frm, reply_subj, full_body)
+            # + WhatsApp/Call en parallele (meme PC eteint via cloud si possible)
+            try:
+                import boss_whatsapp, boss_call
+                # Tronque pour WhatsApp 1k chars
+                wa_text = f"Kele repond: {reply[:800]}"
+                try: boss_whatsapp.send_whatsapp(wa_text)
+                except: pass
+                try: boss_call.call_kele(reply[:150])
+                except: pass
+            except: pass
             if ok:
                 print(f"Reponse envoyee a {frm}")
                 processed.add(uid.decode())
