@@ -106,14 +106,55 @@ def poll_and_reply(dry=False):
             if dry:
                 print("DRY - pas d'envoi")
                 continue
+            # --- COMMANDES FICHIERS : Kélé peut créer/prendre des fichiers même PC éteint (via cloud) ---
+            import re, requests
+            boss_files = BASE / "outputs" / "boss_files"
+            boss_files.mkdir(parents=True, exist_ok=True)
+            actions_done = []
+            # 1. "crée un fichier X avec contenu Y" ou "cree un fichier"
+            m_create = re.search(r"cr[eé]e?\s+un\s+fichier\s+([^\s]+)\s*(avec\s+contenu\s*[:\"]?\s*(.+))?", body, re.I)
+            if m_create:
+                fname = m_create.group(1).strip().strip('"').strip("'")
+                fcontent = m_create.group(3) or f"Fichier {fname} cree par Kélé le {__import__('datetime').datetime.now()}"
+                fpath = boss_files / fname
+                fpath.parent.mkdir(parents=True, exist_ok=True)
+                fpath.write_text(fcontent.strip()[:5000], encoding="utf-8")
+                actions_done.append(f"Fichier créé: outputs/boss_files/{fname} ({len(fcontent)} car)")
+                # git add/push sera fait par le workflow cloud, ici on le fait local aussi
+                try:
+                    import subprocess
+                    subprocess.run(["git","add",str(fpath)], cwd=BASE, capture_output=True)
+                    subprocess.run(["git","commit","-m",f"Boss: crée {fname}"], cwd=BASE, capture_output=True)
+                    subprocess.run(["git","push"], cwd=BASE, capture_output=True)
+                except: pass
+            # 2. "prends ce fichier / telecharge ce glb/image/video : URL"
+            m_url = re.search(r"(https?://\S+\.(glb|gltf|obj|png|jpg|jpeg|mp4|mov|pdf))", body, re.I)
+            if m_url:
+                url = m_url.group(1).strip().strip('.,"\'')
+                ext = m_url.group(2).lower()
+                fname = Path(url).name or f"fichier_{__import__('datetime').datetime.now().strftime('%H%M%S')}.{ext}"
+                fpath = boss_files / fname
+                try:
+                    r = requests.get(url, timeout=20)
+                    r.raise_for_status()
+                    fpath.write_bytes(r.content)
+                    actions_done.append(f"Fichier téléchargé: {url} -> outputs/boss_files/{fname} ({len(r.content)} bytes)")
+                    import subprocess
+                    subprocess.run(["git","add",str(fpath)], cwd=BASE, capture_output=True)
+                    subprocess.run(["git","commit","-m",f"Boss: telecharge {fname}"], cwd=BASE, capture_output=True)
+                    subprocess.run(["git","push"], cwd=BASE, capture_output=True)
+                except Exception as e:
+                    actions_done.append(f"Echec téléchargement {url}: {e}")
+
             # Boss genere reponse
             if client:
-                prompt = f"""Tu es le KXDS Boss, chef du workflow Baobab Cosmique. L'utilisateur t'a envoye ce retour par mail.
+                prompt = f"""Tu es Kélé - Le Griot Suprême, chef du workflow KXDS. L'utilisateur t'a envoye ce retour par mail.
 
 Sujet: {subj}
 Message: {body}
+Actions fichiers deja executes: {actions_done if actions_done else "aucune"}
 
-Contexte: Tu supervises 8 agents (E1-E8) + Guard. Tu dois repondre de facon pro, concise, en disant quelle action tu vas ordonner aux agents suite a son retour. Si c'est un feedback positif, remercie et dis prochaine etape. Si c'est une correction, dis que tu ordonnes le rework a l'agent concerne.
+Contexte: Tu supervises Awa(E1), Fatoumata(E2), Seydou(E3), Mamadou(E4), Aïssata(E5), Ibrahim(E6), Mariam(E7), Boubacar(E8) + Conseil des Sages. Tu dois repondre de facon pro, concise, en disant quelle action tu vas ordonner aux agents suite a son retour. Si c'est une commande fichier, confirme ce que tu as fait et ou est le fichier (meme PC eteint, via cloud GitHub, il apparaitra au retour). 
 
 Reponds en 6-8 phrases max, ton Boss."""
                 try:

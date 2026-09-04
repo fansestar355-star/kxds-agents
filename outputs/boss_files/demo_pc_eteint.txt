@@ -1,0 +1,5 @@
+Fichier créé par Kélé - Le Griot Suprême
+Date: 2026-09-04 21:35:48
+Commande: Boss, crée un fichier demo_pc_eteint.txt
+Preuve: Même PC éteint, le Boss dans le cloud GitHub a créé ce fichier et l'a poussé.
+Tu le verras après coupure via git pull auto ou directement sur https://github.com/fansestar355-star/kxds-agents

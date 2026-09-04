@@ -2,32 +2,127 @@
   "$schema": "https://opencode.ai/schema.json",
   "agents": {
     "kxds-boss": {
-      "description": "BOSS - Chef supreme, seul a parler au mail pro, guide tous les agents, 24/7",
+      "description": "Kélé - Le Griot Suprême (BOSS)",
       "model": "opencode/muse-spark-1.2-contributor-free",
-      "tools": ["read", "write", "edit", "bash", "glob", "grep", "task"],
+      "tools": [
+        "read",
+        "write",
+        "edit",
+        "bash",
+        "glob",
+        "grep",
+        "task"
+      ],
       "prompt": ".opencode/agents/kxds-boss.md"
     },
     "kxds-orchestrator": {
       "description": "Griot Orchestrateur KXDS - pilote les 8 etapes + portes de validation",
       "model": "opencode/muse-spark-1.2-contributor-free",
-      "tools": ["read", "write", "edit", "bash", "glob", "grep", "task"],
+      "tools": [
+        "read",
+        "write",
+        "edit",
+        "bash",
+        "glob",
+        "grep",
+        "task"
+      ],
       "prompt": ".opencode/agents/kxds-orchestrator.md"
     },
-    "kxds-e1": { "description": "E1 Cadrage - pertinence XR", "tools": ["read", "write", "bash"], "prompt": ".opencode/agents/kxds-e1-cadrage.md" },
-    "kxds-e2": { "description": "E2 Recherche & Contenu - savoir endogene", "tools": ["read", "write", "bash", "grep"], "prompt": ".opencode/agents/kxds-e2-recherche.md" },
-    "kxds-e3": { "description": "E3 Concept d'experience", "tools": ["read", "write", "bash"], "prompt": ".opencode/agents/kxds-e3-concept.md" },
-    "kxds-e4": { "description": "E4 Design spatial & interaction", "tools": ["read", "write", "bash", "blender_execute_blender_code"], "prompt": ".opencode/agents/kxds-e4-spatial.md" },
-    "kxds-e5": { "description": "E5 Direction artistique & spatiale", "tools": ["read", "write", "bash", "blender_execute_blender_code"], "prompt": ".opencode/agents/kxds-e5-da.md" },
-    "kxds-e6": { "description": "E6 Prototypage & production", "tools": ["read", "write", "bash", "blender_execute_blender_code"], "prompt": ".opencode/agents/kxds-e6-proto.md" },
-    "kxds-e7": { "description": "E7 Test utilisateur & QA", "tools": ["read", "write", "bash"], "prompt": ".opencode/agents/kxds-e7-test.md" },
-    "kxds-e8": { "description": "E8 Finalisation & documentation", "tools": ["read", "write", "bash"], "prompt": ".opencode/agents/kxds-e8-finalisation.md" },
-    "kxds-guard": { "description": "Comite des Sages - validation GO/NO-GO Highdigenous", "tools": ["read", "bash"], "prompt": ".opencode/agents/kxds-guard-validation.md" }
+    "kxds-e1": {
+      "description": "Awa - La Stratège (E1)",
+      "tools": [
+        "read",
+        "write",
+        "bash"
+      ],
+      "prompt": ".opencode/agents/kxds-e1-cadrage.md"
+    },
+    "kxds-e2": {
+      "description": "Fatoumata - La Gardienne (E2)",
+      "tools": [
+        "read",
+        "write",
+        "bash",
+        "grep"
+      ],
+      "prompt": ".opencode/agents/kxds-e2-recherche.md"
+    },
+    "kxds-e3": {
+      "description": "Seydou - Le Conteur (E3)",
+      "tools": [
+        "read",
+        "write",
+        "bash"
+      ],
+      "prompt": ".opencode/agents/kxds-e3-concept.md"
+    },
+    "kxds-e4": {
+      "description": "Mamadou - Architecte Spatial (E4)",
+      "tools": [
+        "read",
+        "write",
+        "bash",
+        "blender_execute_blender_code"
+      ],
+      "prompt": ".opencode/agents/kxds-e4-spatial.md"
+    },
+    "kxds-e5": {
+      "description": "Aïssata - DA (E5)",
+      "tools": [
+        "read",
+        "write",
+        "bash",
+        "blender_execute_blender_code"
+      ],
+      "prompt": ".opencode/agents/kxds-e5-da.md"
+    },
+    "kxds-e6": {
+      "description": "Ibrahim - Forgeron 3D (E6)",
+      "tools": [
+        "read",
+        "write",
+        "bash",
+        "blender_execute_blender_code"
+      ],
+      "prompt": ".opencode/agents/kxds-e6-proto.md"
+    },
+    "kxds-e7": {
+      "description": "Mariam - Inspectrice QA (E7)",
+      "tools": [
+        "read",
+        "write",
+        "bash"
+      ],
+      "prompt": ".opencode/agents/kxds-e7-test.md"
+    },
+    "kxds-e8": {
+      "description": "Boubacar - Le Scribe (E8)",
+      "tools": [
+        "read",
+        "write",
+        "bash"
+      ],
+      "prompt": ".opencode/agents/kxds-e8-finalisation.md"
+    },
+    "kxds-guard": {
+      "description": "Conseil des Sages (Guard)",
+      "tools": [
+        "read",
+        "bash"
+      ],
+      "prompt": ".opencode/agents/kxds-guard-validation.md"
+    }
   },
-  "skills": ["kxds-validation"],
+  "skills": [
+    "kxds-validation"
+  ],
   "mcp": {
     "gemini": {
       "command": "python",
-      "args": ["run_kxds.py"]
+      "args": [
+        "run_kxds.py"
+      ]
     }
   }
 }
