@@ -53,17 +53,19 @@ def poll_and_reply(dry=False):
         m = imaplib.IMAP4_SSL(IMAP_HOST)
         m.login(EMAIL, APP_PASS)
         m.select("INBOX")
-        # Cherche mails non lus OU tous les recents (pour test)
-        typ, data = m.search(None, '(UNSEEN)')
-        if not data[0]:
-            print("Aucun nouveau mail")
-            # Cherche aussi les 5 derniers pour debug
-            typ, data = m.search(None, 'ALL')
-            uids = data[0].split()[-5:]
-            print(f"Debug: 5 derniers UIDs {uids}")
+        # Cherche uniquement les retours pour Boss (evite les 4000 spams Instagram)
+        # On cherche UNSEEN qui contiennent KXDS-BOSS ou qui sont une reponse (In-Reply-To)
+        typ, data = m.search(None, '(UNSEEN SUBJECT "KXDS-BOSS")')
+        uids_boss = data[0].split() if data[0] else []
+        # + les UNSEEN recents (max 10) pour capter un nouveau mail "Boss: ..." sans tag
+        typ2, data2 = m.search(None, '(UNSEEN SINCE "04-Sep-2026")')
+        uids_recent = data2[0].split()[-10:] if data2[0] else []
+        uids = list(set(uids_boss + uids_recent))
+        if not uids:
+            print("Aucun nouveau mail pour Boss")
             m.logout()
             return
-        uids = data[0].split()
+        print(f"Candidats Boss: {uids_boss} + recents: {uids_recent} -> total {uids}")
         print(f"{len(uids)} nouveau(x) mail(s) : {uids}")
         processed = get_processed()
         from google import genai
@@ -96,7 +98,11 @@ def poll_and_reply(dry=False):
             else:
                 body = msg.get_payload(decode=True).decode(msg.get_content_charset() or "utf-8", errors="ignore")
             body = body[:3000]
-            print(f"--- MAIL de {frm} subj={subj} ---\n{body[:500]}")
+            print(f"--- MAIL de {frm} subj={subj} ---")
+            try:
+                print(body[:500])
+            except:
+                print(body[:500].encode("utf-8", errors="ignore").decode("utf-8", errors="ignore"))
             if dry:
                 print("DRY - pas d'envoi")
                 continue

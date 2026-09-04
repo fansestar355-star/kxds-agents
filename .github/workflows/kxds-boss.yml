@@ -46,6 +46,18 @@ jobs:
           git diff --staged --quiet || git commit -m "Boss auto: $(date -u +%Y-%m-%dT%H:%M:%SZ)" || true
           git push || true
 
+      - name: Boss repond a tes retours mail
+        env:
+          BOSS_SMTP_HOST: ${{ secrets.BOSS_SMTP_HOST }}
+          BOSS_SMTP_PORT: ${{ secrets.BOSS_SMTP_PORT }}
+          BOSS_EMAIL: ${{ secrets.BOSS_EMAIL }}
+          BOSS_APP_PASSWORD: ${{ secrets.BOSS_APP_PASSWORD }}
+          BOSS_TO: ${{ secrets.BOSS_TO }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo "Boss check inbox..."
+          python boss_inbox.py || true
+
       - name: Envoi resume si nouveau
         if: always()
         env:
