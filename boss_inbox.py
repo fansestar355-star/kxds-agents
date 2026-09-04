@@ -207,7 +207,7 @@ Reponds en 6-8 phrases max, ton Boss."""
                 wa_text = f"Kele repond: {reply[:800]}"
                 try: boss_whatsapp.send_whatsapp(wa_text)
                 except: pass
-                try: boss_call.call_kele(reply[:150])
+                try: pass # call desactive pour economiser (WhatsApp reste gratuit)
                 except: pass
             except: pass
             if ok:
