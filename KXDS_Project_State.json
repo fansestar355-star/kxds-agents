@@ -1,0 +1,22 @@
+{
+  "project_id": "KXDS-2026-001",
+  "project_name": "Exemple Experience XR Kabakoo",
+  "current_step": "E1",
+  "iteration_count": 0,
+  "e1_experience_brief": null,
+  "e2_cultural_brief": null,
+  "e3_concept_journey": null,
+  "e4_storyboard_flow": null,
+  "e5_da_sound_guide": null,
+  "e6_release_candidate": null,
+  "e7_test_report": null,
+  "e8_final_package": null,
+  "validation_history": [],
+  "transversal_scores": {
+    "utile": null,
+    "accessible": null,
+    "culturellement_juste": null,
+    "techniquement_excellent": null,
+    "highdigenous": null
+  }
+}

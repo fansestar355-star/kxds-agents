@@ -1,0 +1,23 @@
+{
+  "xr_frugale": {
+    "max_poly_scene": 80000,
+    "max_poly_asset": 15000,
+    "texture_max": "1024x1024",
+    "texture_format": "WebP",
+    "max_draw_calls": 30,
+    "target_fps": 72,
+    "target_devices": ["Quest 2", "Quest 3", "WebXR Mobile"],
+    "max_build_size_mb": 150
+  },
+  "accessibilite": {
+    "confort": "Pas de locomotion continue sans vignette",
+    "duree_session_max_min": 15,
+    "langues": ["fr", "bam", "en"],
+    "subtitle_required": true
+  },
+  "culturel": {
+    "validation_humaine_obligatoire": ["E2", "E5"],
+    "interdit_sacré_sans_consentement": true,
+    "credit_communaute_obligatoire": true
+  }
+}

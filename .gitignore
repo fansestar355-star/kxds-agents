@@ -1,0 +1,5 @@
+.env
+__pycache__/
+*.pyc
+boss.log
+boss_processed_uids.json

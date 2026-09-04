@@ -1,0 +1,65 @@
+# kxds-boss.yml - BOSS KXDS 100% gratuit, resiste aux coupures electricite / PC eteint
+# Tourne dans le cloud GitHub (gratuit), pas sur ton PC
+# Public repo = minutes illimitees | Prive = 2000 min/mois (on run toutes les 60min pour rester gratuit)
+
+name: KXDS-Boss
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"  # toutes les 2h (gratuit, 12 runs/j = ~24min/j, <720min/mois)
+    # Pour 30min: "*/30 * * * *" | Pour 15min: "*/15 * * * *" (attention quota)
+  workflow_dispatch:  # bouton manuel
+  push:
+    branches: [main]
+    paths: ["KXDS_Project_State.json", "outputs/**"]
+
+jobs:
+  boss:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install deps
+        run: pip install google-genai Pillow trimesh pygltflib
+
+      - name: Boss check (once)
+        env:
+          BOSS_SMTP_HOST: ${{ secrets.BOSS_SMTP_HOST }}
+          BOSS_SMTP_PORT: ${{ secrets.BOSS_SMTP_PORT }}
+          BOSS_EMAIL: ${{ secrets.BOSS_EMAIL }}
+          BOSS_APP_PASSWORD: ${{ secrets.BOSS_APP_PASSWORD }}
+          BOSS_TO: ${{ secrets.BOSS_TO }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo "Boss check..."
+          python boss_daemon.py --once
+          # Si nouveau rapport, commit & push (pour persister)
+          git config user.name "KXDS-Boss"
+          git config user.email "boss@kabakoo.local"
+          git add outputs/ KXDS_Project_State.json boss.log || true
+          git diff --staged --quiet || git commit -m "Boss auto: $(date -u +%Y-%m-%dT%H:%M:%SZ)" || true
+          git push || true
+
+      - name: Envoi resume si nouveau
+        if: always()
+        env:
+          BOSS_SMTP_HOST: ${{ secrets.BOSS_SMTP_HOST }}
+          BOSS_SMTP_PORT: ${{ secrets.BOSS_SMTP_PORT }}
+          BOSS_EMAIL: ${{ secrets.BOSS_EMAIL }}
+          BOSS_APP_PASSWORD: ${{ secrets.BOSS_APP_PASSWORD }}
+          BOSS_TO: ${{ secrets.BOSS_TO }}
+        run: |
+          # Envoie le dernier RESUME s'il a ete mis a jour dans les 2h
+          latest=$(find outputs -name "RESUME_COURT.md" -mmin -130 | head -1)
+          if [ -n "$latest" ]; then
+            echo "Envoi $latest"
+            python boss_mailer.py --subject "[KXDS-BOSS] Avancement $(basename $(dirname $latest))" --body-file "$latest" --attach "$latest"
+          else
+            echo "Pas de nouveau resume"
+          fi

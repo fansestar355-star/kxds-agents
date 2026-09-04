@@ -1,0 +1,10 @@
+{
+  "agent": "Opencode E6-Proto (trimesh, pas Blender live)",
+  "model": "baobab_lowpoly_opencode.glb",
+  "poly_count": 160,
+  "draw_calls": 1,
+  "size_kb": 4.16015625,
+  "constraints_check": "PASS (<80k poly, <15k asset)",
+  "style": "Highdigenous - bogolan, lowpoly 8 faces trunk, icosphere foliage",
+  "blender_status": "Blender addon non connecte - genere via trimesh, importable dans Blender via File>Import>GLB"
+}
