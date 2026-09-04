@@ -52,7 +52,7 @@ def send_mail(to, subject, body, attachments=None, html=False):
             maintype, subtype = (ctype or "application/octet-stream").split("/",1)
             msg.add_attachment(p.read_bytes(), maintype=maintype, subtype=subtype, filename=p.name)
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as s:
             s.ehlo()
             s.starttls()
             s.login(BOSS_EMAIL, BOSS_APP_PASSWORD)
@@ -60,7 +60,26 @@ def send_mail(to, subject, body, attachments=None, html=False):
         print(f"MAIL OK -> {to} | {subject}")
         return True
     except Exception as e:
-        print(f"MAIL ECHEC: {e}")
+        print(f"MAIL SMTP ECHEC (souvent bloque dans GitHub Actions): {e}")
+        # Fallback HTTPS gratuit : cree une Issue GitHub (GitHub t'envoie un mail auto)
+        try:
+            import requests, os
+            # Si on est dans GitHub Actions, cree une Issue
+            if os.getenv("GITHUB_ACTIONS") == "true" and os.getenv("GITHUB_TOKEN"):
+                import json, urllib.request, urllib.error
+                repo = os.getenv("GITHUB_REPOSITORY", "fansestar355-star/kxds-agents")
+                token = os.getenv("GITHUB_TOKEN")
+                title = subject[:200]
+                body_gh = f"**De:** {BOSS_EMAIL}\n**A:** {to}\n\n{body}\n\n---\n*Fallback HTTPS car SMTP bloque dans le cloud. Tu recois ce mail via notification GitHub. Reponds en commentant l'Issue.*"
+                if attachments:
+                    body_gh += f"\n\nPieces jointes: {', '.join([str(Path(p).name) for p in attachments])} (disponibles dans le repo)"
+                data = json.dumps({"title": title, "body": body_gh, "labels": ["kxds-boss"]}).encode()
+                req = urllib.request.Request(f"https://api.github.com/repos/{repo}/issues", data=data, headers={"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json", "Content-Type": "application/json"})
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    print(f"ISSUE GITHUB CREEE -> {r.status} (tu vas recevoir un mail via GitHub)")
+                    return True
+        except Exception as e2:
+            print(f"Fallback Issue echoue aussi: {e2}")
         import traceback; traceback.print_exc()
         return False
 

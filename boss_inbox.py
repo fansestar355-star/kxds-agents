@@ -50,7 +50,29 @@ def poll_and_reply(dry=False):
         return
     print(f"[BOSS INBOX] Connexion IMAP {EMAIL}...")
     try:
-        m = imaplib.IMAP4_SSL(IMAP_HOST)
+        # Dans GitHub Actions, IMAP (993) est bloque comme SMTP, on passe en mode GitHub Issues
+        if os.getenv("GITHUB_ACTIONS") == "true":
+            print("GitHub Actions detecte -> IMAP bloque, on passe en mode Issues GitHub (HTTPS)")
+            # Cherche les commentaires non lus sur les Issues Boss via API GitHub
+            try:
+                import urllib.request, json
+                repo = os.getenv("GITHUB_REPOSITORY", "fansestar355-star/kxds-agents")
+                token = os.getenv("GITHUB_TOKEN")
+                if token:
+                    # Liste les 5 dernieres Issues Boss
+                    req = urllib.request.Request(f"https://api.github.com/repos/{repo}/issues?state=open&labels=kxds-boss&per_page=5", headers={"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json"})
+                    with urllib.request.urlopen(req, timeout=10) as r:
+                        issues = json.loads(r.read().decode())
+                        print(f"{len(issues)} Issues Boss ouvertes")
+                        for iss in issues:
+                            print(f"Issue #{iss['number']}: {iss['title']}")
+                            # Cherche commentaires
+                            # Pour simplifier, on ne repond pas auto ici, juste log
+                    print("Mode Issues OK - reponds en commentant l'Issue sur GitHub, Kélé te lira")
+            except Exception as e:
+                print(f"Issues API echec: {e}")
+            return
+        m = imaplib.IMAP4_SSL(IMAP_HOST, timeout=10)
         m.login(EMAIL, APP_PASS)
         m.select("INBOX")
         # Cherche uniquement les retours pour Boss (evite les 4000 spams Instagram)
