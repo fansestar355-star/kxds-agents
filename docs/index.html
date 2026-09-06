@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kélé - Parle sans électricité</title>
+<style>
+body{font-family:system-ui;background:#0a0a0a;color:#eee;max-width:600px;margin:40px auto;padding:20px}
+h1{color:#facc15} textarea{width:100%;height:120px;background:#1a1a1a;color:#fff;border:1px solid #333;padding:12px;border-radius:8px}
+button{background:#facc15;color:#000;border:0;padding:12px 24px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%;margin-top:12px}
+#status{margin-top:16px;padding:12px;border-radius:8px;display:none}
+.ok{background:#14532d} .err{background:#7f1d1d}
+small{color:#888}
+</style>
+</head>
+<body>
+<h1>🌳 Kélé - Le Griot Suprême</h1>
+<p>Écris à Kélé même <b>sans électricité</b> (téléphone suffit). Il te répond par WhatsApp + mail dans les 2h via le cloud.</p>
+<textarea id="msg" placeholder="Ex: Kélé, lance E1 pour mon projet AR handtracking..."></textarea>
+<button onclick="send()">Envoyer à Kélé</button>
+<div id="status"></div>
+<p><small>Dossier cloud: <a href="https://github.com/fansestar355-star/kxds-agents" style="color:#facc15">kxds-agents</a> • Agents: Awa, Fatoumata, Seydou, Mamadou, Aïssata, Ibrahim, Mariam, Boubacar</small></p>
+<script>
+async function send(){
+  const msg=document.getElementById('msg').value.trim();
+  const s=document.getElementById('status');
+  if(!msg){s.style.display='block';s.className='err';s.textContent='Écris un message d\'abord';return}
+  s.style.display='block';s.className='ok';s.textContent='Envoi en cours...';
+  try{
+    // Envoie via GitHub Issue (gratuit, HTTPS, marche sans électricité)
+    const res=await fetch('https://api.github.com/repos/fansestar355-star/kxds-agents/issues', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({title:'[KXDS-BOSS] '+msg.slice(0,60), body: msg + '\n\n---\nEnvoyé depuis la page Kélé sans électricité', labels:['kxds-boss']})
+    });
+    // Note: sans token, ça va échouer en 401 - on passe par le Worker
+    if(res.status===401){
+      // Fallback: envoie via le Worker Cloudflare (proxy avec token caché)
+      const r2=await fetch('https://kele-proxy.fansestar355.workers.dev', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:msg})});
+      const j=await r2.json();
+      if(j.ok){s.textContent='✅ Envoyé ! Kélé te répond par WhatsApp dans les 2h (même PC éteint). Issue #'+j.issue;}
+      else throw new Error(j.error||'Erreur Worker');
+    } else if(res.ok){
+      const j=await res.json();
+      s.textContent='✅ Envoyé ! Issue #'+j.number+' - Kélé te répond bientôt';
+    } else throw new Error('Erreur '+res.status);
+    document.getElementById('msg').value='';
+  }catch(e){
+    s.className='err';
+    s.textContent='Erreur: '+e.message+' - Réessaie ou envoie un mail à fansestar355@gmail.com avec sujet [KXDS-BOSS]';
+  }
+}
+</script>
+</body>
+</html>
