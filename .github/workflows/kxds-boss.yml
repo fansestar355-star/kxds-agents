@@ -6,12 +6,11 @@ name: KXDS-Boss
 
 on:
   schedule:
-    - cron: "0 */2 * * *"  # toutes les 2h (gratuit, 12 runs/j = ~24min/j, <720min/mois)
-    # Pour 30min: "*/30 * * * *" | Pour 15min: "*/15 * * * *" (attention quota)
+    - cron: "*/15 * * * *"  # toutes les 15min (96 runs/j, ~30min/j, gratuit public, ne consomme Gemini que s'il y a un nouveau message)
   workflow_dispatch:  # bouton manuel
   push:
     branches: [main]
-    paths: ["KXDS_Project_State.json", "outputs/**"]
+    paths: ["KXDS_Project_State.json", "outputs/**", "docs/**"]
 
 jobs:
   boss:
