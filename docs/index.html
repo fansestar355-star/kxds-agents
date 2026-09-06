@@ -21,34 +21,17 @@ small{color:#888}
 <div id="status"></div>
 <p><small>Dossier cloud: <a href="https://github.com/fansestar355-star/kxds-agents" style="color:#facc15">kxds-agents</a> • Agents: Awa, Fatoumata, Seydou, Mamadou, Aïssata, Ibrahim, Mariam, Boubacar</small></p>
 <script>
-async function send(){
+function send(){
   const msg=document.getElementById('msg').value.trim();
   const s=document.getElementById('status');
   if(!msg){s.style.display='block';s.className='err';s.textContent='Écris un message d\'abord';return}
-  s.style.display='block';s.className='ok';s.textContent='Envoi en cours...';
-  try{
-    // Envoie via GitHub Issue (gratuit, HTTPS, marche sans électricité)
-    const res=await fetch('https://api.github.com/repos/fansestar355-star/kxds-agents/issues', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({title:'[KXDS-BOSS] '+msg.slice(0,60), body: msg + '\n\n---\nEnvoyé depuis la page Kélé sans électricité', labels:['kxds-boss']})
-    });
-    // Note: sans token, ça va échouer en 401 - on passe par le Worker
-    if(res.status===401){
-      // Fallback: envoie via le Worker Cloudflare (proxy avec token caché)
-      const r2=await fetch('https://kele-proxy.fansestar355.workers.dev', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:msg})});
-      const j=await r2.json();
-      if(j.ok){s.textContent='✅ Envoyé ! Kélé te répond par WhatsApp dans les 2h (même PC éteint). Issue #'+j.issue;}
-      else throw new Error(j.error||'Erreur Worker');
-    } else if(res.ok){
-      const j=await res.json();
-      s.textContent='✅ Envoyé ! Issue #'+j.number+' - Kélé te répond bientôt';
-    } else throw new Error('Erreur '+res.status);
-    document.getElementById('msg').value='';
-  }catch(e){
-    s.className='err';
-    s.textContent='Erreur: '+e.message+' - Réessaie ou envoie un mail à fansestar355@gmail.com avec sujet [KXDS-BOSS]';
-  }
+  const title='[KXDS-BOSS] '+msg.slice(0,60);
+  const body=msg + '\n\n---\nEnvoyé depuis la page Kélé sans électricité (téléphone suffit)';
+  const url='https://github.com/fansestar355-star/kxds-agents/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body)+'&labels=kxds-boss';
+  s.style.display='block';s.className='ok';
+  s.innerHTML='✅ Clique sur <b>Submit new issue</b> dans l\'onglet qui vient de s\'ouvrir — Kélé te répond par WhatsApp dans les 2h même PC éteint.<br><a href="'+url+'" target="_blank" style="color:#facc15">Ouvre le lien si rien ne s\'est ouvert</a>';
+  window.open(url, '_blank');
+  document.getElementById('msg').value='';
 }
 </script>
 </body>
