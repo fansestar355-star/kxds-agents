@@ -6,7 +6,7 @@ name: KXDS-Boss
 
 on:
   schedule:
-    - cron: "*/15 * * * *"  # toutes les 15min (96 runs/j, ~30min/j, gratuit public, ne consomme Gemini que s'il y a un nouveau message)
+    - cron: "*/2 * * * *"  # toutes les 2min demandées (GitHub impose 5min mini, donc effectif ~5min)
   workflow_dispatch:  # bouton manuel
   push:
     branches: [main]
